@@ -1,4 +1,4 @@
-<h1 align="center">Hi 👋, I'm Chiranjeev Singh</h1>
+<h1 align="center">Hi, I'm Chiranjeev Singh</h1>
 <h3 align="center">Delivery Leader | Program Manager | Agile Coach | Telecom & IT Transformation Expert</h3>
 
 ---
