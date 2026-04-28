@@ -1,8 +1,3 @@
-## Hi there 👋
-
-<!--
-**ChiranjeevSingh01/chiranjeevsingh01** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
-
 <h1 align="center">Hi 👋, I'm Chiranjeev Singh</h1>
 <h3 align="center">Delivery Leader | Program Manager | Agile Coach | Telecom & IT Transformation Expert</h3>
 
@@ -71,7 +66,7 @@ I enjoy transforming **complex delivery challenges into structured, predictable 
 ---
 
 ## 📫 Connect with me
-- LinkedIn: https://linkedin.com/in/your-profile
+- LinkedIn: https://linkedin.com/in/chiranjeevsingh01
 - Email: chiranjeevsingh01@gmail.com
 
 ---
