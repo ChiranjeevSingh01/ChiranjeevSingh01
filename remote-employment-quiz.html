@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Working USD, Living IST</title>
+<style>
+  :root{
+    --ink:#161a1f;
+    --paper:#eef1ee;
+    --line:#161a1f;
+    --brass:#8a6d3b;
+    --brass-deep:#6b5228;
+    --wrong:#a4432f;
+    --right:#3a6b4f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+    display:flex;
+    justify-content:center;
+    padding:40px 16px;
+  }
+  .doc{
+    width:100%;
+    max-width:640px;
+  }
+  .masthead{
+    border-bottom:3px solid var(--line);
+    padding-bottom:14px;
+    margin-bottom:26px;
+  }
+  .eyebrow{
+    font-family: 'Courier New', monospace;
+    font-size:11px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    color:var(--brass-deep);
+    margin:0 0 6px;
+  }
+  h1{
+    font-size:30px;
+    margin:0 0 6px;
+    letter-spacing:-.01em;
+  }
+  .sub{
+    font-family: 'Courier New', monospace;
+    font-size:12.5px;
+    color:#4a4f55;
+    margin:0;
+  }
+  #quizArea{}
+  .q-index{
+    font-family:'Courier New', monospace;
+    font-size:11px;
+    color:var(--brass-deep);
+    letter-spacing:.1em;
+    margin-bottom:8px;
+  }
+  .q-text{
+    font-size:19px;
+    line-height:1.4;
+    margin:0 0 18px;
+  }
+  .choices{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom:20px;
+  }
+  button.choice{
+    text-align:left;
+    font-family: Georgia, serif;
+    font-size:15px;
+    padding:13px 16px;
+    background:var(--paper);
+    border:1.5px solid var(--ink);
+    color:var(--ink);
+    cursor:pointer;
+    border-radius:2px;
+    transition:background .12s ease, transform .06s ease;
+  }
+  button.choice:hover:not(:disabled){
+    background:#e3e7e1;
+  }
+  button.choice:focus-visible{
+    outline:2px solid var(--brass);
+    outline-offset:2px;
+  }
+  button.choice:disabled{
+    cursor:default;
+  }
+  button.choice.correct{
+    background:var(--right);
+    border-color:var(--right);
+    color:#f4f6f2;
+  }
+  button.choice.incorrect{
+    background:var(--wrong);
+    border-color:var(--wrong);
+    color:#f4f6f2;
+  }
+  .explain{
+    font-family:'Courier New', monospace;
+    font-size:12.5px;
+    line-height:1.6;
+    color:#3d4147;
+    border-left:2px solid var(--brass);
+    padding:4px 0 4px 12px;
+    margin-bottom:18px;
+    display:none;
+  }
+  .explain.show{display:block;}
+  .nextBtn{
+    font-family:'Courier New', monospace;
+    font-size:12px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    padding:10px 18px;
+    background:var(--ink);
+    color:var(--paper);
+    border:none;
+    cursor:pointer;
+    display:none;
+  }
+  .nextBtn.show{display:inline-block;}
+  .progress{
+    display:flex;
+    gap:5px;
+    margin-bottom:24px;
+  }
+  .tick{
+    height:4px;
+    flex:1;
+    background:#cfd3cd;
+  }
+  .tick.done{background:var(--brass);}
+  .tick.current{background:var(--ink);}
+  .result{
+    text-align:center;
+    padding:30px 10px 10px;
+  }
+  .result .score{
+    font-size:52px;
+    margin:0;
+    letter-spacing:-.02em;
+  }
+  .result .label{
+    font-family:'Courier New', monospace;
+    font-size:12px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--brass-deep);
+    margin:0 0 4px;
+  }
+  .result p.verdict{
+    max-width:440px;
+    margin:18px auto 26px;
+    line-height:1.6;
+    font-size:15px;
+  }
+  .restart{
+    font-family:'Courier New', monospace;
+    font-size:12px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    padding:10px 18px;
+    background:transparent;
+    border:1.5px solid var(--ink);
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .restart:hover{background:var(--ink); color:var(--paper);}
+</style>
+</head>
+<body>
+<div class="doc">
+  <div class="masthead">
+    <p class="eyebrow">Five-question briefing</p>
+    <h1>Working USD, Living IST</h1>
+    <p class="sub">A quick check on how US companies actually employ people from India</p>
+  </div>
+
+  <div class="progress" id="progress"></div>
+  <div id="quizArea"></div>
+  <div id="resultArea"></div>
+</div>
+
+<script>
+const QUESTIONS = [
+  {
+    q: "Can a US company legally put you on its own payroll as a direct W-2 employee while you live and work in India?",
+    choices: [
+      "Yes, freely — location doesn't matter for payroll",
+      "No, not without an Indian entity or an Employer of Record",
+      "Only if you hold a US visa",
+      "Only for engineering roles"
+    ],
+    correct: 1,
+    explain: "Employing someone under Indian labour law requires a registered Indian entity — or a third-party Employer of Record (EOR) acting as the legal employer on the company's behalf."
+  },
+  {
+    q: "What does an Employer of Record (EOR) like Deel or Multiplier actually do?",
+    choices: [
+      "Finds you the job",
+      "Becomes your legal employer in India so the US company doesn't need its own entity",
+      "Converts your salary to crypto",
+      "Files your US tax return"
+    ],
+    correct: 1,
+    explain: "The EOR is your registered employer of record — handling PF, ESI, TDS and compliance — while you work day-to-day for the US client company."
+  },
+  {
+    q: "If you invoice a US company directly as an independent consultant from India, which form do they typically ask you to submit?",
+    choices: [
+      "W-2",
+      "I-9",
+      "W-8BEN",
+      "1099-K"
+    ],
+    correct: 2,
+    explain: "W-8BEN certifies you're a non-US taxpayer, so the US company doesn't withhold US tax on payments for work performed entirely outside the US."
+  },
+  {
+    q: "A full-time role, fixed hours, one client, using their tools and reporting structure — paid as a 'contractor.' Under Indian law, what's the risk?",
+    choices: [
+      "None — contractor status is always respected",
+      "It may be reclassified as employment, triggering statutory obligations retroactively",
+      "It becomes automatically tax-free",
+      "It requires an H-1B"
+    ],
+    correct: 1,
+    explain: "Indian authorities apply substance over form. Exclusive, controlled, fixed-retainer arrangements can be reclassified as employment — with back PF and TDS exposure for the employer."
+  },
+  {
+    q: "For a senior Program/Delivery Manager profile, which arrangement is usually the most realistic path to direct-USD income from India?",
+    choices: [
+      "Applying to standard India GCC job postings",
+      "Waiting for a US visa sponsorship offer",
+      "Fractional or consulting engagements invoiced directly in USD",
+      "Only applying to on-site US roles"
+    ],
+    correct: 2,
+    explain: "India-based GCCs of US firms usually pay in INR. Fractional/interim/advisory consulting invoiced in USD lines up better with senior profiles — and with a board-advisory positioning."
+  }
+];
+
+let current = 0;
+let score = 0;
+let answered = false;
+
+const progressEl = document.getElementById('progress');
+const quizArea = document.getElementById('quizArea');
+const resultArea = document.getElementById('resultArea');
+
+function renderProgress(){
+  progressEl.innerHTML = '';
+  QUESTIONS.forEach((_, i) => {
+    const t = document.createElement('div');
+    t.className = 'tick' + (i < current ? ' done' : i === current ? ' current' : '');
+    progressEl.appendChild(t);
+  });
+}
+
+function renderQuestion(){
+  answered = false;
+  const item = QUESTIONS[current];
+  quizArea.innerHTML = '';
+
+  const idx = document.createElement('div');
+  idx.className = 'q-index';
+  idx.textContent = 'Question ' + (current + 1) + ' of ' + QUESTIONS.length;
+
+  const qText = document.createElement('p');
+  qText.className = 'q-text';
+  qText.textContent = item.q;
+
+  const choicesWrap = document.createElement('div');
+  choicesWrap.className = 'choices';
+
+  item.choices.forEach((choiceText, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice';
+    btn.textContent = choiceText;
+    btn.addEventListener('click', () => selectChoice(i));
+    choicesWrap.appendChild(btn);
+  });
+
+  const explain = document.createElement('p');
+  explain.className = 'explain';
+  explain.id = 'explainBox';
+  explain.textContent = item.explain;
+
+  const nextBtn = document.createElement('button');
+  nextBtn.className = 'nextBtn';
+  nextBtn.id = 'nextBtn';
+  nextBtn.textContent = current === QUESTIONS.length - 1 ? 'See results' : 'Next question';
+  nextBtn.addEventListener('click', goNext);
+
+  quizArea.appendChild(idx);
+  quizArea.appendChild(qText);
+  quizArea.appendChild(choicesWrap);
+  quizArea.appendChild(explain);
+  quizArea.appendChild(nextBtn);
+
+  renderProgress();
+}
+
+function selectChoice(i){
+  if (answered) return;
+  answered = true;
+  const item = QUESTIONS[current];
+  const buttons = quizArea.querySelectorAll('button.choice');
+  buttons.forEach((b, idx) => {
+    b.disabled = true;
+    if (idx === item.correct) b.classList.add('correct');
+    else if (idx === i) b.classList.add('incorrect');
+  });
+  if (i === item.correct) score++;
+  document.getElementById('explainBox').classList.add('show');
+  document.getElementById('nextBtn').classList.add('show');
+}
+
+function goNext(){
+  current++;
+  if (current < QUESTIONS.length){
+    renderQuestion();
+  } else {
+    renderResult();
+  }
+}
+
+function renderResult(){
+  quizArea.innerHTML = '';
+  progressEl.innerHTML = '';
+  QUESTIONS.forEach(() => {
+    const t = document.createElement('div');
+    t.className = 'tick done';
+    progressEl.appendChild(t);
+  });
+
+  let verdict;
+  if (score === QUESTIONS.length) verdict = "You've got the structures down cold — EOR, contractor invoicing, and reclassification risk. That instinct will serve the fractional/advisory track well.";
+  else if (score >= 3) verdict = "Solid grasp of the landscape. Worth a second pass on whichever question tripped you up before you start pitching consulting engagements.";
+  else verdict = "Worth re-reading the breakdown on EOR vs. direct contracting before you lean into USD-invoicing conversations with US firms.";
+
+  resultArea.innerHTML = `
+    <div class="result">
+      <p class="label">Score</p>
+      <p class="score">${score} / ${QUESTIONS.length}</p>
+      <p class="verdict">${verdict}</p>
+      <button class="restart" id="restartBtn">Retake</button>
+    </div>
+  `;
+  document.getElementById('restartBtn').addEventListener('click', () => {
+    current = 0; score = 0;
+    resultArea.innerHTML = '';
+    renderQuestion();
+  });
+}
+
+renderQuestion();
+</script>
+</body>
+</html>
